@@ -19,9 +19,7 @@ logger = logging.getLogger()
 
 
 class Config:
-    """
-    Database configuration.
-    """
+    # Database configuration
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_DATABASE_URI = (
         "postgresql://{login}:{pwd}@{db_host}:{db_port}/{db_name}"
@@ -33,3 +31,8 @@ class Config:
             db_name=local.database_name
             )
         )
+
+    # JWT configuration
+    JWT_SECRET_KEY = local.JWT_SECRET_KEY
+    JWT_ACCESS_TOKEN_EXPIRES = 3600
+    JWT_TOKEN_LOCATION = ("headers", "cookies", "json")
