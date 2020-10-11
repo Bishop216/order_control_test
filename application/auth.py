@@ -11,10 +11,54 @@ from application.models import User, db
 
 from redis import StrictRedis
 
-bp = Blueprint('auth', __name__, url_prefix='/auth')
 logger = logging.getLogger(__file__)
+bp = Blueprint('auth', __name__, url_prefix='/auth')
 
 redis_conn = StrictRedis()
+
+
+def admin_required(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        identity = get_jwt_identity()
+        if not identity['role'] != 'admin':
+            return jsonify(message="You are not admin"), 403
+        return func(*args, **kwargs)
+
+    return wrapper
+
+
+def cashier_required(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        identity = get_jwt_identity()
+        if not identity['role'] != 'cashier':
+            return jsonify(message="You are not cashier"), 403
+        return func(*args, **kwargs)
+
+    return wrapper
+
+
+def shop_assistant_required(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        identity = get_jwt_identity()
+        if not identity['role'] != 'shop-assistant':
+            return jsonify(message="You are not shop-assistant"), 403
+        return func(*args, **kwargs)
+
+    return wrapper
+
+
+def accountant_required(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        identity = get_jwt_identity()
+        if not identity['role'] != 'accountant':
+            return jsonify(message="You are not accountant"), 403
+        return func(*args, **kwargs)
+
+    return wrapper
 
 
 def blacklist_check(func):
@@ -79,7 +123,7 @@ def login():
     if not user:
         return jsonify({"msg": "Bad username or password"}), 401
 
-    if not user.check_password(password):
+    if not check_password_hash(user.password, password):
         return jsonify({"msg": "Invalid credentials"}), 400
 
     identity = {
@@ -107,4 +151,33 @@ def refresh():
 def logout():
     jti = get_raw_jwt().get("jti")
     redis_conn.set("disabled_token" + jti, 1, 3600)
-    return jsonify(message="success"), 200
+    return jsonify(msg="success"), 200
+
+
+@bp.route("/set_role", methods=["PATCH"])
+@jwt_required
+@blacklist_check
+@admin_required
+def set_role():
+    request_json = request.get_json()
+
+    if not request_json:
+        return jsonify({"msg": "Missing JSON in request"}), 400
+
+    username = request_json.get('username')
+    role = request_json.get('role')
+
+    if not username:
+        return jsonify({"msg": "Missing username parameter"}), 400
+    if not role:
+        return jsonify({"msg": "Missing role parameter"}), 400
+
+    user = User.query.filter_by(username=username).first()
+
+    user.role = role
+
+    db.session.commit()
+
+    return jsonify(msg="success"), 200
+
+

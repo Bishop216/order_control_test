@@ -1,7 +1,9 @@
 from flask import Flask
 from flask_migrate import Migrate
+from flask_jwt_extended import JWTManager
 
 migrate = Migrate()
+jwt = JWTManager()
 
 
 def create_app():
@@ -21,8 +23,13 @@ def create_app():
     # Migrate
     migrate.init_app(app, db)
 
+    # JWT
+    jwt.init_app(app)
+
     # Blueprint
-    from application.parser import bp
-    app.register_blueprint(bp)
+    from application.auth import bp as bp_auth
+    from application.store import bp as bp_store
+    app.register_blueprint(bp_auth)
+    app.register_blueprint(bp_store)
 
     return app
