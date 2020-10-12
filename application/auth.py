@@ -9,6 +9,8 @@ from flask_jwt_extended import create_access_token, get_jwt_identity, get_raw_jw
 
 from application.models import User, db
 
+from application.serializer import UserSchema
+
 from redis import StrictRedis
 
 logger = logging.getLogger(__file__)
@@ -21,7 +23,7 @@ def admin_required(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         identity = get_jwt_identity()
-        if not identity['role'] != 'admin':
+        if not identity['role'] != "admin":
             return jsonify(message="You are not admin"), 403
         return func(*args, **kwargs)
 
@@ -100,7 +102,8 @@ def signup():
     db.session.add(new_user)
     db.session.commit()
 
-    return jsonify(username=new_user.username), 200
+    schema = UserSchema()
+    return jsonify(user=schema.dump(new_user)), 200
 
 
 @bp.route("/login", methods=["POST"])
@@ -181,3 +184,8 @@ def set_role():
     return jsonify(msg="success"), 200
 
 
+@bp.route("/test", methods=["GET"])
+@jwt_required
+@admin_required(roles=["admin"])
+def test():
+    return jsonify(msg='asd')

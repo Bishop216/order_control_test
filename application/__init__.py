@@ -26,6 +26,10 @@ def create_app():
     # JWT
     jwt.init_app(app)
 
+    # Marshmallow serializer
+    from application.serializer import ma
+    ma.init_app(app)
+
     # Blueprint
     from application.auth import bp as bp_auth
     from application.store import bp as bp_store
