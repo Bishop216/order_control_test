@@ -19,11 +19,26 @@ class ProductSchema(ma.SQLAlchemySchema):
     id = ma.auto_field()
     name = ma.auto_field()
     price = fields.Method("price_method")
+    discount = fields.Method("discount_method")
+    discount_price = fields.Method("discount_price_method")
     date_created = ma.auto_field()
+
+    @staticmethod
+    def discount_method(obj):
+        discount = obj.get_discount()
+
+        if discount:
+            return str(obj.get_discount()) + "%"
+
+        return None
 
     @staticmethod
     def price_method(obj):
         return str(obj.price)
+
+    @staticmethod
+    def discount_price_method(obj):
+        return obj.get_current_price()
 
 
 class OrderSchema(ma.SQLAlchemySchema):

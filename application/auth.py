@@ -1,14 +1,13 @@
 import logging
 from functools import wraps
-from flask import Blueprint, request, jsonify
 
+from flask import Blueprint, request, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from flask_jwt_extended import create_access_token, get_jwt_identity, get_raw_jwt, \
     jwt_required, jwt_refresh_token_required, create_refresh_token
 
 from application.models import User, db
-
 from application.serializer import UserSchema
 
 from redis import StrictRedis
@@ -182,10 +181,3 @@ def set_role():
     db.session.commit()
 
     return jsonify(msg="success"), 200
-
-
-@bp.route("/test", methods=["GET"])
-@jwt_required
-@admin_required(roles=["admin"])
-def test():
-    return jsonify(msg='asd')

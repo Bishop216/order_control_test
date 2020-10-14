@@ -21,16 +21,7 @@ logger = logging.getLogger()
 class Config:
     # Database configuration
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SQLALCHEMY_DATABASE_URI = (
-        "postgresql://{login}:{pwd}@{db_host}:{db_port}/{db_name}"
-        .format(
-            login=local.login,
-            pwd=local.password,
-            db_host=local.database_host,
-            db_port=local.database_port,
-            db_name=local.database_name
-            )
-        )
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(os.path.abspath(os.path.dirname(__file__)), 'app.db')
 
     # JWT configuration
     JWT_SECRET_KEY = local.JWT_SECRET_KEY

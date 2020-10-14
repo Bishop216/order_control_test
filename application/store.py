@@ -1,10 +1,10 @@
 import logging
+from datetime import datetime
+
 from flask import Blueprint, request, jsonify
 
 from application.models import User, Product, Order, db
-
 from application.auth import cashier_required, shop_assistant_required, accountant_required
-
 from application.serializer import ProductSchema, OrderSchema
 
 from flask_jwt_extended import get_jwt_identity, jwt_required
@@ -100,5 +100,72 @@ def get_bill():
     schema = OrderSchema()
     return jsonify(order=schema.dump(order)), 200
 
+
+@bp.route("/confirm_order", methods=["POST"])
+@jwt_required
+@cashier_required
+def order_paid():
+    request_json = request.get_json()
+
+    if not request_json:
+        return jsonify({"msg": "Missing JSON in request"}), 400
+
+    order_id = request_json.get("order_id")
+
+    if not order_id:
+        return jsonify({"msg": "Missing order_id parameter"}), 400
+
+    order = Order.query.filter_by(id=order_id).first()
+
+    if not order:
+        return jsonify({"msg": "Order doesn't exist"}), 400
+
+    order.status = "paid"
+
+    db.session.commit()
+
+    return jsonify(msg="success"), 200
+
+
+@bp.route("/get_orders", methods=["GET"])
+@jwt_required
+@accountant_required
+def get_orders():
+    request_json = request.get_json()
+
+    if request_json:
+        filters = request_json.get("filters")
+        if filters:
+            date_from = filters.get("date_from")
+            date_to = filters.get("date_to")
+
+            try:
+                if date_from and date_to:
+                    date_from = datetime.strptime(date_from, "%Y-%m-%d")
+                    date_to = datetime.strptime(date_to, "%Y-%m-%d")
+                    orders = Order.query.filter(Order.date_created >= date_from).filter(Order.date_created <= date_to)
+
+                elif date_from:
+                    date_from = datetime.strptime(date_from, "%Y-%m-%d")
+                    orders = Order.query.filter(Order.date_created >= date_from)
+
+                elif date_to:
+                    date_to = datetime.strptime(date_to, "%Y-%m-%d")
+                    orders = Order.query.filter(Order.date_created <= date_to)
+
+                else:
+                    orders = Order.query.all()
+
+            except ValueError:
+                orders = Order.query.all()
+
+        else:
+            orders = Order.query.all()
+
+    else:
+        orders = Order.query.all()
+
+    schema = OrderSchema(many=True)
+    return jsonify(orders=schema.dump(orders)), 200
 
 
