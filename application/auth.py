@@ -2,7 +2,7 @@ import logging
 from functools import wraps
 
 from flask import Blueprint, request, jsonify
-from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import check_password_hash
 
 from flask_jwt_extended import create_access_token, get_jwt_identity, get_raw_jwt, \
     jwt_required, jwt_refresh_token_required, create_refresh_token
@@ -22,7 +22,7 @@ def admin_required(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         identity = get_jwt_identity()
-        if not identity['role'] != "admin":
+        if not identity['role'] != 'admin':
             return jsonify(message="You are not admin"), 403
         return func(*args, **kwargs)
 
@@ -93,10 +93,8 @@ def signup():
     if user:
         return jsonify({"msg": "Username is already in use "}), 400
 
-    new_user = User(
-        username=username,
-        password=generate_password_hash(password)
-    )
+    new_user = User(username=username)
+    new_user.set_password(password)
 
     db.session.add(new_user)
     db.session.commit()

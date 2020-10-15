@@ -1,4 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
+from werkzeug.security import generate_password_hash
 from datetime import datetime, timedelta
 import calendar
 
@@ -12,6 +13,10 @@ class User(db.Model):
     username = db.Column(db.Text, nullable=False, unique=True)
     password = db.Column(db.Text, nullable=False)
     role = db.Column(db.String(50), nullable=True)
+
+    def set_password(self, password):
+        self.password = generate_password_hash(password)
+        db.session.commit()
 
 
 class Product(db.Model):
