@@ -1,6 +1,5 @@
 from application import create_app
 from application.models import Product, User, db
-from sqlalchemy.exc import IntegrityError
 
 app = create_app()
 app.app_context().push()

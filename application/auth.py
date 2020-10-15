@@ -18,6 +18,7 @@ bp = Blueprint('auth', __name__, url_prefix='/auth')
 redis_conn = StrictRedis()
 
 
+# Decorator that restricts access to endpoint only to user with admin role
 def admin_required(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
@@ -29,6 +30,7 @@ def admin_required(func):
     return wrapper
 
 
+# Decorator that restricts access to endpoint only to user with cashier role
 def cashier_required(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
@@ -40,6 +42,7 @@ def cashier_required(func):
     return wrapper
 
 
+# Decorator that restricts access to endpoint only to user with shop-assistant role
 def shop_assistant_required(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
@@ -51,6 +54,7 @@ def shop_assistant_required(func):
     return wrapper
 
 
+# Decorator that restricts access to endpoint only to user with accountant role
 def accountant_required(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
@@ -62,6 +66,7 @@ def accountant_required(func):
     return wrapper
 
 
+# Decorator that checks if user JWT token is blacklisted
 def blacklist_check(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
@@ -75,6 +80,10 @@ def blacklist_check(func):
 
 @bp.route("/signup", methods=["POST"])
 def signup():
+    """
+    Signup
+    :return:
+    """
     request_json = request.get_json()
 
     if not request_json:
@@ -105,6 +114,10 @@ def signup():
 
 @bp.route("/login", methods=["POST"])
 def login():
+    """
+    Login
+    :return:
+    """
     request_json = request.get_json()
 
     if not request_json:
@@ -140,6 +153,10 @@ def login():
 @bp.route("/refresh", methods=["POST"])
 @jwt_refresh_token_required
 def refresh():
+    """
+    Refreshes user access token
+    :return:
+    """
     identity = get_jwt_identity()
     access_token = create_access_token(identity=identity)
     return jsonify(access_token=access_token), 200
@@ -149,6 +166,10 @@ def refresh():
 @jwt_required
 @blacklist_check
 def logout():
+    """
+    Logout
+    :return:
+    """
     jti = get_raw_jwt().get("jti")
     redis_conn.set("disabled_token" + jti, 1, 3600)
     return jsonify(msg="success"), 200
@@ -159,6 +180,10 @@ def logout():
 @blacklist_check
 @admin_required
 def set_role():
+    """
+    Allows admin to assign a role to user
+    :return:
+    """
     request_json = request.get_json()
 
     if not request_json:

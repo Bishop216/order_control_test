@@ -4,7 +4,7 @@ from datetime import datetime
 from flask import Blueprint, request, jsonify
 
 from application.models import User, Product, Order, db
-from application.auth import cashier_required, shop_assistant_required, accountant_required
+from application.auth import cashier_required, shop_assistant_required, accountant_required, blacklist_check
 from application.serializer import ProductSchema, OrderSchema
 
 from flask_jwt_extended import get_jwt_identity, jwt_required
@@ -15,7 +15,12 @@ bp = Blueprint('store', __name__, url_prefix='/store')
 
 @bp.route("/create_order", methods=["POST"])
 @jwt_required
+@blacklist_check
 def create_order():
+    """
+    Saves new order to DB
+    :return:
+    """
     request_json = request.get_json()
 
     if not request_json:
@@ -45,8 +50,13 @@ def create_order():
 
 @bp.route("/confirm_order", methods=["POST"])
 @jwt_required
+@blacklist_check
 @shop_assistant_required
 def confirm_order():
+    """
+    Lets shop-assistant change order status to "completed"
+    :return:
+    """
     request_json = request.get_json()
 
     if not request_json:
@@ -71,6 +81,10 @@ def confirm_order():
 
 @bp.route("/get_products", methods=["GET"])
 def get_products():
+    """
+    Returns all the products
+    :return:
+    """
     products = Product.query.all()
 
     schema = ProductSchema(many=True)
@@ -80,8 +94,13 @@ def get_products():
 
 @bp.route("/get_bill", methods=["GET"])
 @jwt_required
+@blacklist_check
 @cashier_required
 def get_bill():
+    """
+    Returns the bill associated with specified order
+    :return:
+    """
     request_json = request.get_json()
 
     if not request_json:
@@ -103,8 +122,13 @@ def get_bill():
 
 @bp.route("/confirm_order", methods=["POST"])
 @jwt_required
+@blacklist_check
 @cashier_required
 def order_paid():
+    """
+    Lets cashier change order status to "paid"
+    :return:
+    """
     request_json = request.get_json()
 
     if not request_json:
@@ -129,8 +153,13 @@ def order_paid():
 
 @bp.route("/get_orders", methods=["GET"])
 @jwt_required
+@blacklist_check
 @accountant_required
 def get_orders():
+    """
+    Lets accountant see all the orders
+    :return:
+    """
     request_json = request.get_json()
 
     if request_json:
