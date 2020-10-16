@@ -26,9 +26,9 @@ flask db init
 flask db migrate
 flask db upgrade
 ```
-Populate "products" and "users" tables:
+(optional) Populate "products" and "users" tables:
 ```bash
-python fixtures.py 
+python populate_db.py
 ```
 Running flask server:
 ```bash

@@ -15,6 +15,7 @@ from redis import StrictRedis
 logger = logging.getLogger(__file__)
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
+# Redis for storing blacklisted auth tokens
 redis_conn = StrictRedis()
 
 
@@ -23,7 +24,7 @@ def admin_required(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         identity = get_jwt_identity()
-        if not identity['role'] != 'admin':
+        if not identity['role'] == 'admin':
             return jsonify(message="You are not admin"), 403
         return func(*args, **kwargs)
 
@@ -35,7 +36,7 @@ def cashier_required(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         identity = get_jwt_identity()
-        if not identity['role'] != 'cashier':
+        if not identity['role'] == 'cashier':
             return jsonify(message="You are not cashier"), 403
         return func(*args, **kwargs)
 
@@ -47,7 +48,7 @@ def shop_assistant_required(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         identity = get_jwt_identity()
-        if not identity['role'] != 'shop-assistant':
+        if not identity['role'] == 'shop-assistant':
             return jsonify(message="You are not shop-assistant"), 403
         return func(*args, **kwargs)
 
@@ -59,7 +60,7 @@ def accountant_required(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         identity = get_jwt_identity()
-        if not identity['role'] != 'accountant':
+        if not identity['role'] == 'accountant':
             return jsonify(message="You are not accountant"), 403
         return func(*args, **kwargs)
 
@@ -198,6 +199,9 @@ def set_role():
         return jsonify({"msg": "Missing role parameter"}), 400
 
     user = User.query.filter_by(username=username).first()
+
+    if not user:
+        return jsonify({"msg": "User doesn't exist"}), 400
 
     user.role = role
 

@@ -120,7 +120,7 @@ def get_bill():
     return jsonify(order=schema.dump(order)), 200
 
 
-@bp.route("/confirm_order", methods=["POST"])
+@bp.route("/order_paid", methods=["POST"])
 @jwt_required
 @blacklist_check
 @cashier_required
