@@ -34,3 +34,7 @@ Running flask server:
 ```bash
 flask run
 ```
+### Running tests:
+```bash
+pytest
+```
