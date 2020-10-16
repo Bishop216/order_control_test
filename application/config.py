@@ -1,11 +1,6 @@
 import os
 import logging
 
-try:
-    import application.local as local
-except ImportError:
-    raise RuntimeError("Database credentials are not provided!")
-
 BASEDIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 logging.basicConfig(
@@ -24,6 +19,6 @@ class Config:
     SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(os.path.abspath(os.path.dirname(__file__)), 'app.db')
 
     # JWT configuration
-    JWT_SECRET_KEY = local.JWT_SECRET_KEY
+    JWT_SECRET_KEY = "secret"
     JWT_ACCESS_TOKEN_EXPIRES = 3600
     JWT_TOKEN_LOCATION = ("headers", "cookies", "json")
